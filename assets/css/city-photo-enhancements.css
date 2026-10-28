@@ -1,0 +1,201 @@
+.bitlis-photo-feature,
+.bolu-photo-feature,
+.burdur-photo-feature,
+.cankiri-photo-feature,
+.corum-photo-feature,
+.denizli-photo-feature {
+    margin: 24px 0 34px;
+}
+
+.bitlis-photo-feature h2,
+.bolu-photo-feature h2,
+.burdur-photo-feature h2,
+.cankiri-photo-feature h2,
+.corum-photo-feature h2,
+.denizli-photo-feature h2 {
+    margin-bottom: 4px;
+    font-size: 1.55rem;
+}
+
+.bitlis-photo-feature .lead,
+.bolu-photo-feature .lead,
+.burdur-photo-feature .lead,
+.cankiri-photo-feature .lead,
+.corum-photo-feature .lead,
+.denizli-photo-feature .lead {
+    margin-bottom: 14px;
+    color: var(--muted);
+}
+
+.bitlis-photo-grid,
+.bolu-photo-grid,
+.burdur-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.cankiri-photo-grid,
+.corum-photo-grid,
+.denizli-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.bitlis-photo-card,
+.bolu-photo-card,
+.burdur-photo-card,
+.cankiri-photo-card,
+.corum-photo-card,
+.denizli-photo-card {
+    min-width: 0;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+}
+
+.bitlis-photo-card img,
+.bolu-photo-card img,
+.burdur-photo-card img,
+.cankiri-photo-card img,
+.corum-photo-card img,
+.denizli-photo-card img {
+    display: block;
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+    background: #111827;
+}
+
+.bitlis-photo-card figcaption,
+.bolu-photo-card figcaption,
+.burdur-photo-card figcaption,
+.cankiri-photo-card figcaption,
+.corum-photo-card figcaption,
+.denizli-photo-card figcaption {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 12px;
+    color: var(--text);
+}
+
+.bitlis-photo-card figcaption span,
+.bolu-photo-card figcaption span,
+.burdur-photo-card figcaption span,
+.cankiri-photo-card figcaption span,
+.corum-photo-card figcaption span,
+.denizli-photo-card figcaption span {
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.45;
+}
+
+.bitlis-photo-card figcaption a,
+.bolu-photo-card figcaption a,
+.burdur-photo-card figcaption a,
+.cankiri-photo-card figcaption a,
+.corum-photo-card figcaption a,
+.denizli-photo-card figcaption a,
+.place-photo figcaption a,
+.photo-credit a {
+    color: #93c5fd;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.place-photo {
+    margin: 0 0 12px;
+}
+
+.place-photo img {
+    display: block;
+    width: 100%;
+    height: 150px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: #111827;
+}
+
+.place-photo figcaption,
+.photo-credit {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 0.68rem;
+    line-height: 1.45;
+}
+
+.place-photo figcaption a:focus-visible,
+.photo-credit a:focus-visible,
+.bitlis-photo-card a:focus-visible,
+.bolu-photo-card a:focus-visible,
+.burdur-photo-card a:focus-visible,
+.cankiri-photo-card a:focus-visible,
+.corum-photo-card a:focus-visible,
+.denizli-photo-card a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.bitlis-photo-card a:hover,
+.bolu-photo-card a:hover,
+.burdur-photo-card a:hover,
+.cankiri-photo-card a:hover,
+.corum-photo-card a:hover,
+.denizli-photo-card a:hover,
+.place-photo figcaption a:hover,
+.photo-credit a:hover {
+    text-decoration: underline;
+}
+
+section.cat {
+    scroll-margin-top: 88px;
+}
+
+#top {
+    scroll-margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+    .bitlis-photo-grid,
+    .bolu-photo-grid,
+    .burdur-photo-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cankiri-photo-grid,
+    .corum-photo-grid,
+    .denizli-photo-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .bitlis-photo-grid,
+    .bolu-photo-grid,
+    .burdur-photo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cankiri-photo-grid,
+    .corum-photo-grid,
+    .denizli-photo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bitlis-photo-card img,
+    .bolu-photo-card img,
+    .burdur-photo-card img {
+        height: 220px;
+    }
+
+    .cankiri-photo-card img,
+    .corum-photo-card img,
+    .denizli-photo-card img {
+        height: 220px;
+    }
+}
