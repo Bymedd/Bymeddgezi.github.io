@@ -1,15 +1,119 @@
-[build]
-  command = "node scripts/build-static.mjs"
-  publish = "dist"
+# Netlify yapılandırması
+# Statik site olduğu için derleme adımı gerekmez; kök klasör yayımlanır.
 
+[build]
+  publish = "."
+  functions = "netlify/functions"
+  environment = { NODE_VERSION = "22" }
+
+# Yönetim paneli adresi
 [[redirects]]
-  from = "/"
-  to = "/turkey.html"
-  status = 301
+  from = "/admin"
+  to = "/admin/index.html"
+  status = 200
+
+# Sunucu kodu, testler ve şema dosyaları statik olarak sunulmaz
+[[redirects]]
+  from = "/netlify/*"
+  to = "/pages/404.html"
+  status = 404
   force = true
 
+[[redirects]]
+  from = "/scripts/*"
+  to = "/pages/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/tests/*"
+  to = "/pages/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/supabase/*"
+  to = "/pages/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/node_modules/*"
+  to = "/pages/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/package.json"
+  to = "/pages/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/package-lock.json"
+  to = "/pages/404.html"
+  status = 404
+  force = true
+
+# Yönetim paneli ve API yanıtları dizinlenmez
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+# Statik varlıklar için tarayıcı önbelleği
+# Okunabilir (SEO dostu) kategori adresleri
+[[redirects]]
+  from = "/dunya"
+  to = "/pages/world.html"
+  status = 200
+
+[[redirects]]
+  from = "/turkiye"
+  to = "/pages/turkey.html"
+  status = 200
+
+[[redirects]]
+  from = "/teknoloji"
+  to = "/pages/technology.html"
+  status = 200
+
+# Gelecekte kullanılacak haber adresi biçimi:
+#   /haber/haber-slug  ->  /pages/article.html?slug=haber-slug
+[[redirects]]
+  from = "/haber/:slug"
+  to = "/pages/article.html?slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/arama"
+  to = "/pages/search.html"
+  status = 200
+
+# Güvenlik başlıkları
 [[headers]]
   for = "/*"
   [headers.values]
-  X-Content-Type-Options = "nosniff"
-  Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+
+# Statik varlıklar için tarayıcı önbelleği
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
