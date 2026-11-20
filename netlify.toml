@@ -1,20 +1,15 @@
-# gezilecek.net — yönetim paneli fonksiyonları
-# /haber/admin/ panelinin çağırdığı /api/admin/* uçları burada yayınlanır.
-# Statik site davranışı değişmez: yayın kökü depo köküdür.
-
 [build]
-  publish = "."
-  functions = "netlify/functions"
-  environment = { NODE_VERSION = "22" }
+  command = "node scripts/build-static.mjs"
+  publish = "dist"
+
+[[redirects]]
+  from = "/"
+  to = "/turkey.html"
+  status = 301
+  force = true
 
 [[headers]]
-  for = "/api/*"
+  for = "/*"
   [headers.values]
-    X-Robots-Tag = "noindex, nofollow"
-    Cache-Control = "no-store"
-
-[[headers]]
-  for = "/haber/admin/*"
-  [headers.values]
-    X-Robots-Tag = "noindex, nofollow, noarchive"
-    Cache-Control = "no-store"
+  X-Content-Type-Options = "nosniff"
+  Referrer-Policy = "strict-origin-when-cross-origin"
