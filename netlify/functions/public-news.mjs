@@ -20,6 +20,12 @@ const FIELDS =
 
 const CACHE_HEADERS = { "cache-control": "public, max-age=60, s-maxage=300" };
 
+const SCHEMA_ERROR_CODES = new Set(["42P01", "42703", "PGRST204", "PGRST205"]);
+
+function isSchemaError(error) {
+  return Boolean(error) && SCHEMA_ERROR_CODES.has(error.code);
+}
+
 function boundedInt(value, fallback, min, max) {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed)) {
@@ -51,8 +57,12 @@ export default async function handler(req) {
         .maybeSingle();
 
       if (error) {
-        if (error.code === "42P01") {
-          throw new HttpError(503, "schema_missing", "Yayın tablosu bulunamadı.");
+        if (isSchemaError(error)) {
+          throw new HttpError(
+            503,
+            "schema_missing",
+            "Yayın tablosu bulunamadı. Supabase SQL Editor'de supabase/migrations/20261120120000_phase3_publish.sql dosyasını çalıştırın."
+          );
         }
         throw new Error(`Haber okunamadı: ${error.message}`);
       }
@@ -74,8 +84,12 @@ export default async function handler(req) {
 
     const { data, error, count } = await query;
     if (error) {
-      if (error.code === "42P01") {
-        throw new HttpError(503, "schema_missing", "Yayın tablosu bulunamadı.");
+      if (isSchemaError(error)) {
+        throw new HttpError(
+          503,
+          "schema_missing",
+          "Yayın tablosu bulunamadı. Supabase SQL Editor'de supabase/migrations/20261120120000_phase3_publish.sql dosyasını çalıştırın."
+        );
       }
       throw new Error(`Yayınlar okunamadı: ${error.message}`);
     }

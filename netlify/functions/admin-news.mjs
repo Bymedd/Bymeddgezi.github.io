@@ -28,7 +28,9 @@ const STATUSES = [
 ];
 
 const SELECT_FIELDS =
-  "id, title, description, article_url, image_url, published_at, collected_at, category, category_confidence, duplicate_group_id, importance_score, score_breakdown, status, review_reason, portal_published_at, portal_slug, sources(name, reliability_score)";
+  "id, title, description, article_url, image_url, published_at, collected_at, category, category_confidence, duplicate_group_id, importance_score, score_breakdown, status, review_reason, sources(name, reliability_score)";
+
+const PUBLISHED_FIELDS = "raw_article_id, slug, is_breaking, published_at, title, category";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -44,6 +46,115 @@ function publicPath(slug) {
   return `/haber/pages/article.html?slug=${encodeURIComponent(slug)}`;
 }
 
+const SCHEMA_ERROR_CODES = new Set(["42P01", "42703", "23514", "PGRST204", "PGRST205"]);
+
+function isSchemaError(error) {
+  return Boolean(error) && SCHEMA_ERROR_CODES.has(error.code);
+}
+
+/**
+ * Yayın durumu tek doğru kaynaktan, `published_articles` tablosundan türetilir.
+ * Böylece raw_articles üzerindeki portal_* sütunları / durum kısıtı henüz
+ * eklenmemiş olsa da panel yayındaki haberleri görür.
+ */
+async function withPublishedState(supabase, items) {
+  if (!items.length) {
+    return items;
+  }
+  const ids = items.map((row) => row.id);
+  const { data, error } = await supabase
+    .from("published_articles")
+    .select(PUBLISHED_FIELDS)
+    .in("raw_article_id", ids);
+
+  if (error) {
+    if (isSchemaError(error)) {
+      return items;
+    }
+    throw new Error(`Yayın bilgisi okunamadı: ${error.message}`);
+  }
+
+  const map = new Map((data || []).map((row) => [row.raw_article_id, row]));
+  return items.map((item) => {
+    const published = map.get(item.id);
+    if (!published) {
+      return item;
+    }
+    return {
+      ...item,
+      status: "published",
+      portal_slug: published.slug,
+      portal_published_at: published.published_at,
+      is_breaking: Boolean(published.is_breaking)
+    };
+  });
+}
+
+/** "Yayında" filtresi: kaynak tablo published_articles. */
+async function listPublishedArticles(supabase, params) {
+  const limit = boundedInt(params.get("limit"), 25, 1, 100);
+  const offset = boundedInt(params.get("offset"), 0, 0, 100000);
+  const category = params.get("category") || "";
+  const query = (params.get("q") || "").trim().slice(0, 100);
+
+  if (category && !ALLOWED_CATEGORIES.includes(category)) {
+    throw new HttpError(400, "invalid_category", "Geçersiz kategori filtresi.");
+  }
+
+  let request = supabase
+    .from("published_articles")
+    .select(PUBLISHED_FIELDS, { count: "exact" })
+    .order("published_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (category) {
+    request = request.eq("category", category);
+  }
+  if (query) {
+    request = request.ilike("title", `%${query}%`);
+  }
+
+  const { data, error, count } = await request;
+  if (error) {
+    if (isSchemaError(error)) {
+      return { ok: true, total: 0, limit, offset, items: [] };
+    }
+    throw new Error(`Yayınlar okunamadı: ${error.message}`);
+  }
+
+  const rows = data || [];
+  if (!rows.length) {
+    return { ok: true, total: count ?? 0, limit, offset, items: [] };
+  }
+
+  const { data: rawRows, error: rawError } = await supabase
+    .from("raw_articles")
+    .select(SELECT_FIELDS)
+    .in("id", rows.map((row) => row.raw_article_id));
+
+  if (rawError) {
+    throw new Error(`Yayın kaynakları okunamadı: ${rawError.message}`);
+  }
+
+  const byId = new Map((rawRows || []).map((row) => [row.id, row]));
+  const items = rows.map((published) => {
+    const raw = byId.get(published.raw_article_id);
+    return {
+      ...(raw || { id: published.raw_article_id }),
+      title: (raw && raw.title) || published.title,
+      category: (raw && raw.category) || published.category,
+      source_name: raw?.sources?.name || null,
+      sources: undefined,
+      status: "published",
+      portal_slug: published.slug,
+      portal_published_at: published.published_at,
+      is_breaking: Boolean(published.is_breaking)
+    };
+  });
+
+  return { ok: true, total: count ?? 0, limit, offset, items };
+}
+
 async function listArticles(supabase, params) {
   const limit = boundedInt(params.get("limit"), 25, 1, 100);
   const offset = boundedInt(params.get("offset"), 0, 0, 100000);
@@ -56,6 +167,10 @@ async function listArticles(supabase, params) {
   }
   if (category && !ALLOWED_CATEGORIES.includes(category)) {
     throw new HttpError(400, "invalid_category", "Geçersiz kategori filtresi.");
+  }
+
+  if (status === "published") {
+    return listPublishedArticles(supabase, params);
   }
 
   let request = supabase
@@ -76,33 +191,24 @@ async function listArticles(supabase, params) {
 
   const { data, error, count } = await request;
   if (error) {
-    if (error.code === "42P01") {
-      throw new HttpError(503, "schema_missing", "raw_articles tablosu bulunamadı. SQL migration uygulanmalı.");
+    if (isSchemaError(error)) {
+      throw new HttpError(
+        503,
+        "schema_missing",
+        "Haber havuzu şeması eksik. supabase/migrations/20261120120000_phase3_publish.sql dosyasını Supabase SQL Editor'de çalıştırın."
+      );
     }
     throw new Error(`Haber havuzu okunamadı: ${error.message}`);
   }
 
-  const items = (data || []).map((row) => ({
+  const baseItems = (data || []).map((row) => ({
     ...row,
     source_name: row.sources?.name || null,
     is_breaking: false,
     sources: undefined
   }));
 
-  // Yayındaki kayıtların "son dakika" bilgisi ayrı tabloda tutulur.
-  const publishedIds = items.filter((row) => row.status === "published").map((row) => row.id);
-  if (publishedIds.length) {
-    const { data: publishedRows } = await supabase
-      .from("published_articles")
-      .select("raw_article_id, is_breaking")
-      .in("raw_article_id", publishedIds);
-    const breaking = new Set(
-      (publishedRows || []).filter((row) => row.is_breaking).map((row) => row.raw_article_id)
-    );
-    items.forEach((row) => {
-      row.is_breaking = breaking.has(row.id);
-    });
-  }
+  const items = await withPublishedState(supabase, baseItems);
 
   return {
     ok: true,

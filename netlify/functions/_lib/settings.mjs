@@ -73,6 +73,13 @@ export async function updateSettings(supabase, patch) {
     .single();
 
   if (error) {
+    if (["42703", "42P01", "PGRST204", "PGRST205"].includes(error.code)) {
+      throw new HttpError(
+        503,
+        "schema_missing",
+        "system_settings.auto_publish sütunu yok. supabase/migrations/20261120120000_phase3_publish.sql dosyasını Supabase SQL Editor'de çalıştırın."
+      );
+    }
     throw new Error(`Ayarlar güncellenemedi: ${error.message}`);
   }
   return data;

@@ -64,8 +64,10 @@ export function slugify(value) {
   );
 }
 
+const SCHEMA_ERROR_CODES = new Set(["42P01", "42703", "23514", "PGRST204", "PGRST205"]);
+
 function schemaMissing(error) {
-  return error && (error.code === "42P01" || error.code === "42703" || error.code === "23514");
+  return Boolean(error) && SCHEMA_ERROR_CODES.has(error.code);
 }
 
 function schemaError() {
@@ -154,6 +156,73 @@ async function uniqueSlug(supabase, base, rawArticleId) {
 }
 
 /**
+ * Ham kaydı "yayında" olarak işaretler. `portal_*` sütunları veya `published`
+ * durum kısıtı henüz eklenmemişse yayın yine de geçerlidir: portal, yayını
+ * `published_articles` tablosundan okur. Bu yüzden eksik şema yayını engellemez.
+ */
+async function markPublished(supabase, articleId, published) {
+  const portalPatch = {
+    status: "published",
+    review_reason: null,
+    portal_published_at: published.published_at,
+    portal_slug: published.slug
+  };
+
+  let { error } = await supabase.from("raw_articles").update(portalPatch).eq("id", articleId);
+  if (!error) {
+    return;
+  }
+
+  if (error.code === "42703") {
+    // portal_* sütunları yok: yalnızca durumu işaretle.
+    ({ error } = await supabase
+      .from("raw_articles")
+      .update({ status: "published", review_reason: null })
+      .eq("id", articleId));
+    if (!error) {
+      return;
+    }
+  }
+
+  if (error.code === "23514") {
+    console.warn(
+      "raw_articles durum kısıtı 'published' içermiyor; yayın published_articles üzerinden izleniyor."
+    );
+    return;
+  }
+
+  if (schemaMissing(error)) {
+    throw schemaError();
+  }
+  throw new Error(`Haber durumu güncellenemedi: ${error.message}`);
+}
+
+/** Yayın işaretini kaldırır; eksik şema yüzünden hata vermez. */
+async function clearPublishedMark(supabase, articleId) {
+  let { error } = await supabase
+    .from("raw_articles")
+    .update({ status: "ready_for_ai", portal_published_at: null, portal_slug: null })
+    .eq("id", articleId);
+
+  if (!error) {
+    return;
+  }
+  if (error.code === "42703") {
+    ({ error } = await supabase
+      .from("raw_articles")
+      .update({ status: "ready_for_ai" })
+      .eq("id", articleId));
+    if (!error) {
+      return;
+    }
+  }
+  if (error.code === "23514") {
+    return;
+  }
+  throw new Error(`Haber durumu güncellenemedi: ${error.message}`);
+}
+
+/**
  * Haberi yayınlar. Kayıt daha önce yayınlanmışsa günceller (düzenleme).
  * @returns {Promise<object>} published_articles satırı
  */
@@ -215,23 +284,7 @@ export async function publishArticle(supabase, article, overrides = {}) {
     }
   }
 
-  const { error: updateError } = await supabase
-    .from("raw_articles")
-    .update({
-      status: "published",
-      review_reason: null,
-      portal_published_at: published.published_at,
-      portal_slug: published.slug
-    })
-    .eq("id", article.id);
-
-  if (updateError) {
-    if (schemaMissing(updateError)) {
-      throw schemaError();
-    }
-    throw new Error(`Haber durumu güncellenemedi: ${updateError.message}`);
-  }
-
+  await markPublished(supabase, article.id, published);
   return published;
 }
 
@@ -249,18 +302,7 @@ export async function unpublishArticle(supabase, rawArticleId) {
     throw new Error(`Yayın kaydı silinemedi: ${error.message}`);
   }
 
-  const { error: updateError } = await supabase
-    .from("raw_articles")
-    .update({
-      status: "ready_for_ai",
-      portal_published_at: null,
-      portal_slug: null
-    })
-    .eq("id", rawArticleId);
-
-  if (updateError) {
-    throw new Error(`Haber durumu güncellenemedi: ${updateError.message}`);
-  }
+  await clearPublishedMark(supabase, rawArticleId);
   return { ok: true };
 }
 
@@ -287,12 +329,20 @@ export async function rejectArticle(supabase, rawArticleId, reason) {
  * yayınlar. Hatalar tek tek yutulur, tarama sonucu bozulmaz.
  */
 export async function autoPublishReady(supabase, { limit = 6 } = {}) {
+  // Yayındaki kayıtlar (durum kısıtı eskiyse hâlâ ready_for_ai görünür) atlanır.
+  const publishedIds = new Set();
+  const { data: publishedRows } = await supabase
+    .from("published_articles")
+    .select("raw_article_id")
+    .limit(500);
+  (publishedRows || []).forEach((row) => publishedIds.add(row.raw_article_id));
+
   const { data, error } = await supabase
     .from("raw_articles")
     .select("id, title, description, article_url, image_url, category, published_at, importance_score, sources(name)")
     .eq("status", "ready_for_ai")
     .order("importance_score", { ascending: false })
-    .limit(limit);
+    .limit(limit + publishedIds.size);
 
   if (error) {
     if (schemaMissing(error)) {
@@ -305,7 +355,15 @@ export async function autoPublishReady(supabase, { limit = 6 } = {}) {
 
   let published = 0;
   let failed = 0;
+  let processed = 0;
   for (const article of data || []) {
+    if (publishedIds.has(article.id)) {
+      continue;
+    }
+    if (processed >= limit) {
+      break;
+    }
+    processed += 1;
     try {
       await publishArticle(supabase, article, {});
       published += 1;
