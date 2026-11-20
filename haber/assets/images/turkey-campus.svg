@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="Üniversite kampüsü illüstrasyonu">
+  <defs>
+    <linearGradient id="csky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1f3a"/>
+      <stop offset=".65" stop-color="#1d466e"/>
+      <stop offset="1" stop-color="#2f6390"/>
+    </linearGradient>
+    <linearGradient id="bld" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dfe9f3"/>
+      <stop offset="1" stop-color="#b6c9da"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#csky)"/>
+  <circle cx="930" cy="170" r="82" fill="#f6e8cf" opacity=".5"/>
+  <g stroke="#e8f1fb" stroke-opacity=".08" stroke-width="4">
+    <path d="M0 300h1200M0 400h1200M0 500h1200"/>
+  </g>
+  <g fill="#0f2c4a" opacity=".8">
+    <path d="M0 600h1200v150H0z"/>
+    <path d="M120 520h140v80H120zM960 500h150v100H960z"/>
+  </g>
+  <g>
+    <path d="M360 330l240-120 240 120v280H360z" fill="url(#bld)"/>
+    <path d="M600 210l250 125v22L600 236 350 357v-22z" fill="#c8102e"/>
+    <path d="M560 390h80v220h-80z" fill="#12395c"/>
+    <g fill="#1c4a71" opacity=".85">
+      <rect x="410" y="400" width="90" height="70" rx="6"/>
+      <rect x="700" y="400" width="90" height="70" rx="6"/>
+      <rect x="700" y="500" width="90" height="70" rx="6"/>
+      <rect x="410" y="500" width="90" height="70" rx="6"/>
+    </g>
+    <path d="M330 610h540" stroke="#0b1f3a" stroke-width="10"/>
+  </g>
+  <g stroke="#c8102e" stroke-width="8" opacity=".75"><path d="M600 155v-60h90"/></g>
+  <g fill="#dfe9f3" opacity=".9">
+    <circle cx="255" cy="636" r="20"/><rect x="243" y="656" width="24" height="46" rx="10"/>
+    <circle cx="905" cy="648" r="18"/><rect x="894" y="666" width="22" height="42" rx="9"/>
+  </g>
+  <g fill="#12395c">
+    <path d="M150 640l14-56 14 56z"/><rect x="158" y="636" width="12" height="70"/>
+    <path d="M1040 650l16-62 16 62z"/><rect x="1050" y="646" width="12" height="60"/>
+  </g>
+</svg>

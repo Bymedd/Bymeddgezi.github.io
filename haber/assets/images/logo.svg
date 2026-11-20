@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Haber Portalı logosu">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1f3a"/>
+      <stop offset="1" stop-color="#16365c"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <path d="M96 96h320v320H96z" fill="none" stroke="#ffffff" stroke-opacity=".14" stroke-width="4"/>
+  <path d="M168 132h44v248h-44zM300 132h44v248h-44zM212 232h88v48h-88z" fill="#ffffff"/>
+  <path d="M96 96h320v26H96z" fill="#c8102e"/>
+  <path d="M96 390h320v26H96z" fill="#c8102e"/>
+</svg>

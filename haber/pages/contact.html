@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>İletişim | HABER PORTALI</title>
+  <meta name="description" content="HABER PORTALI ile iletişime geçin: haber ihbarı, düzeltme talebi, reklam ve genel sorular için iletişim formu.">
+  <link rel="canonical" href="https://gezilecek.net/haber/pages/contact.html">
+  <meta name="theme-color" content="#0b1f3a">
+  <meta name="robots" content="index, follow">
+  <meta property="og:site_name" content="HABER PORTALI">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="İletişim | HABER PORTALI">
+  <meta property="og:description" content="HABER PORTALI ile iletişime geçin: haber ihbarı, düzeltme talebi, reklam ve genel sorular için iletişim formu.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">İçeriğe geç</a>
+
+  <header class="site-header">
+    <div class="topbar">
+      <div class="container topbar__inner">
+        <p class="topbar__date" data-today>19 Kasım 2026</p>
+        <p class="topbar__demo" data-demo-note>Demo yayın · Tüm içerikler örnek amaçlıdır</p>
+        <ul class="social topbar__social" aria-label="Sosyal medya bağlantıları">
+          <li><a href="#sosyal-medya" data-social-placeholder="X" aria-label="X hesabımız">X</a></li>
+          <li><a href="#sosyal-medya" data-social-placeholder="Facebook" aria-label="Facebook hesabımız">f</a></li>
+          <li><a href="#sosyal-medya" data-social-placeholder="Instagram" aria-label="Instagram hesabımız">ig</a></li>
+          <li><a href="#sosyal-medya" data-social-placeholder="YouTube" aria-label="YouTube hesabımız">yt</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container masthead">
+      <a class="brand" href="../index.html" aria-label="HABER PORTALI ana sayfa">
+        <span class="brand__mark" data-site-mark aria-hidden="true">HP</span>
+        <span class="brand__text">
+          <span class="brand__name" data-site-name>HABER PORTALI</span>
+          <span class="brand__tagline" data-site-tagline>Güncel · Bağımsız · Güvenilir</span>
+        </span>
+      </a>
+      <form class="search" role="search" action="search.html" method="get">
+        <label class="sr-only" for="site-search">Haber ara</label>
+        <input id="site-search" name="q" type="search" placeholder="Haber, konu veya etiket ara…" autocomplete="off">
+        <button type="submit" aria-label="Ara">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="nav-wrap">
+      <div class="container nav-wrap__inner">
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="nav-toggle__text">Menü</span>
+        </button>
+        <nav class="main-nav" id="main-nav" aria-label="Ana menü">
+          <ul>
+            <li><a href="../index.html">Ana Sayfa</a></li>
+            <li><a href="world.html">Dünya</a></li>
+            <li><a href="turkey.html">Türkiye</a></li>
+            <li><a href="technology.html">Teknoloji</a></li>
+            <li><a href="about.html">Hakkımızda</a></li>
+            <li><a class="is-active" aria-current="page" href="contact.html">İletişim</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-head" aria-labelledby="sayfa-baslik">
+      <div class="container">
+        <span class="page-head__eyebrow">Kurumsal</span>
+        <h1 class="page-head__title" id="sayfa-baslik">İletişim</h1>
+        <p class="page-head__desc">Haber ihbarı, düzeltme talebi ve diğer konular için bize yazın. Talebiniz ilgili masaya iletilir.</p>
+      </div>
+    </section>
+
+    <div class="container page-body">
+      <div class="prose">
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>E-posta</h3>
+            <p><a href="mailto:iletisim@gezilecek.net">iletisim@gezilecek.net</a></p>
+          </div>
+          <div class="info-card">
+            <h3>Telefon</h3>
+            <p>+90 000 000 00 00</p>
+          </div>
+          <div class="info-card">
+            <h3>Adres</h3>
+            <p>Yayın Merkezi, Örnek Mahallesi, Haber Caddesi No: 1, Ankara</p>
+          </div>
+          <div class="info-card">
+            <h3>Çalışma saatleri</h3>
+            <p>Hafta içi 09.00 – 18.00</p>
+          </div>
+        </div>
+
+        <form class="contact-form" name="iletisim" method="POST" action="contact.html?gonderildi=1" data-netlify="true" netlify-honeypot="bot-field">
+          <input type="hidden" name="form-name" value="iletisim">
+          <p hidden>
+            <label>Bu alanı boş bırakın: <input name="bot-field"></label>
+          </p>
+          <div class="form-row">
+            <div class="field">
+              <label for="ad">Ad soyad</label>
+              <input id="ad" name="ad" type="text" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="eposta">E-posta</label>
+              <input id="eposta" name="eposta" type="email" autocomplete="email" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="konu">Konu</label>
+            <select id="konu" name="konu" required>
+              <option value="">Seçiniz</option>
+              <option>Haber ihbarı</option>
+              <option>Düzeltme talebi</option>
+              <option>Genel soru</option>
+              <option>Reklam ve iş birliği</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="mesaj">Mesajınız</label>
+            <textarea id="mesaj" name="mesaj" required placeholder="Konuyu ve varsa haber bağlantısını yazın…"></textarea>
+            <span class="field__hint">Haber ihbarı için kaynak bağlantısı eklemeniz incelemeyi hızlandırır.</span>
+          </div>
+          <label class="form-check" for="onay">
+            <input id="onay" name="onay" type="checkbox" required>
+            <span>Mesajımın iletişim amacıyla işlenmesini kabul ediyorum. Ayrıntılar için <a href="privacy.html">Gizlilik Politikası</a>.</span>
+          </label>
+          <button class="btn btn--primary" type="submit">Mesajı gönder</button>
+          <p id="form-success" class="form-status" hidden>Mesajınız alındı. Teşekkür ederiz; en kısa sürede dönüş yapacağız.</p>
+          <p class="field__hint">Form gönderimi Netlify Forms altyapısıyla işlenir. Site yayına alındığında mesajlar Netlify panelindeki Forms bölümünde görünür.</p>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="../index.html" aria-label="HABER PORTALI ana sayfa">
+            <span class="brand__mark" data-site-mark aria-hidden="true">HP</span>
+            <span class="brand__text">
+              <span class="brand__name" data-site-name>HABER PORTALI</span>
+              <span class="brand__tagline" data-site-tagline>Güncel · Bağımsız · Güvenilir</span>
+            </span>
+          </a>
+          <p class="footer-desc">Dünya, Türkiye ve teknoloji gündemini sade, hızlı ve okunabilir bir arayüzle sunan dijital haber platformu.</p>
+          <ul class="social footer-social" aria-label="Sosyal medya bağlantıları">
+            <li><a href="#sosyal-medya" data-social-placeholder="X" aria-label="X hesabımız">X</a></li>
+            <li><a href="#sosyal-medya" data-social-placeholder="Facebook" aria-label="Facebook hesabımız">f</a></li>
+            <li><a href="#sosyal-medya" data-social-placeholder="Instagram" aria-label="Instagram hesabımız">in</a></li>
+            <li><a href="#sosyal-medya" data-social-placeholder="YouTube" aria-label="YouTube hesabımız">yt</a></li>
+            <li><a href="#sosyal-medya" data-social-placeholder="LinkedIn" aria-label="LinkedIn hesabımız">li</a></li>
+          </ul>
+        </div>
+        <nav aria-labelledby="footer-corporate">
+          <h2 class="footer-title" id="footer-corporate">Kurumsal</h2>
+          <ul class="footer-list">
+            <li><a href="about.html">Hakkımızda</a></li>
+            <li><a href="contact.html">İletişim</a></li>
+            <li><a href="editorial-policy.html">Kaynak ve Yayın İlkeleri</a></li>
+            <li><a href="privacy.html">Gizlilik Politikası</a></li>
+            <li><a href="terms.html">Kullanım Koşulları</a></li>
+          </ul>
+        </nav>
+        <nav aria-labelledby="footer-categories">
+          <h2 class="footer-title" id="footer-categories">Kategoriler</h2>
+          <ul class="footer-list">
+            <li><a href="world.html">Dünya</a></li>
+            <li><a href="turkey.html">Türkiye</a></li>
+            <li><a href="technology.html">Teknoloji</a></li>
+            <li><a href="search.html">Haber Arama</a></li>
+            <li><a href="../index.html#most-read-title">En Çok Okunanlar</a></li>
+          </ul>
+        </nav>
+        <div class="footer-contact">
+          <h2 class="footer-title">İletişim</h2>
+          <p><a href="mailto:iletisim@gezilecek.net">iletisim@gezilecek.net</a></p>
+          <p>+90 000 000 00 00</p>
+          <p>Yayın Merkezi, Örnek Mahallesi, Haber Caddesi No: 1, Ankara</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container footer-bottom__inner">
+        <p>© <span data-site-year>2026</span> <span data-site-name>HABER PORTALI</span> · Tüm hakları saklıdır.</p>
+        <p>Bu site bir demo yayındır; haberler örnek amaçlı hazırlanmıştır.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/data.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/store.js"></script>
+  <script src="../assets/js/ui.js"></script>
+  <script src="../assets/js/site.js"></script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var box = document.getElementById("form-success");
+      if (params.get("gonderildi") === "1" && box) {
+        box.hidden = false;
+        box.scrollIntoView({ block: "center" });
+      }
+    })();
+  </script>
+</body>
+</html>

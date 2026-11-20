@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="İklim ve yenilenebilir enerji illüstrasyonu">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a1b31"/>
+      <stop offset=".55" stop-color="#143a60"/>
+      <stop offset="1" stop-color="#23547f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".72" cy=".28" r=".55">
+      <stop offset="0" stop-color="#ffb27a" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffb27a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d2440"/>
+      <stop offset="1" stop-color="#071526"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#sky)"/>
+  <rect width="1200" height="750" fill="url(#glow)"/>
+  <circle cx="864" cy="212" r="74" fill="#ffd7a8" opacity=".9"/>
+  <g stroke="#ffffff" stroke-opacity=".07">
+    <path d="M0 260h1200M0 360h1200M0 460h1200M0 560h1200"/>
+  </g>
+  <path d="M0 560c150-46 232-26 330 4s196 34 300-6 232-40 350-6 150 26 220 12v186H0z" fill="url(#hill)"/>
+  <path d="M0 640c180-40 300-16 430 8s250 8 380-18 260-10 390 18v102H0z" fill="#061220"/>
+  <g stroke="#e8f1fb" stroke-width="9" stroke-linecap="round" fill="none" opacity=".92">
+    <path d="M330 470V286"/>
+    <path d="M330 300l-84-52M330 300l96-38M330 300l10-104"/>
+    <path d="M590 500V344"/>
+    <path d="M590 356l-66-44M590 356l76-30M590 356l8-82"/>
+  </g>
+  <g fill="#c8102e">
+    <circle cx="330" cy="292" r="13"/>
+    <circle cx="590" cy="350" r="11"/>
+  </g>
+  <g opacity=".85">
+    <path d="M760 600l58-96h132l58 96z" fill="#0f2c4c" stroke="#8fb4d8" stroke-opacity=".5" stroke-width="4"/>
+    <path d="M818 504l-14-22h150l14 22z" fill="#16395e"/>
+    <path d="M792 520h210M780 556h234" stroke="#8fb4d8" stroke-opacity=".35" stroke-width="4"/>
+  </g>
+  <g stroke="#c8102e" stroke-width="10" opacity=".9"><path d="M960 640h180"/></g>
+  <g stroke="#ffffff" stroke-opacity=".18" stroke-width="3">
+    <path d="M60 120h240M60 150h150"/>
+  </g>
+</svg>
