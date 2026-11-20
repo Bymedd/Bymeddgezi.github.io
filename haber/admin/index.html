@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yönetim Paneli | HABER PORTALI</title>
+  <meta name="description" content="Haber toplama robotu yönetim paneli.">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#0b1f3a">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+  <div id="boot-screen" class="boot-screen">
+    <div class="boot-card">
+      <span class="brand__mark" aria-hidden="true">HP</span>
+      <p>Yönetim paneli yükleniyor…</p>
+    </div>
+  </div>
+
+  <!-- Giriş -->
+  <section id="login-view" class="login-view" hidden>
+    <form id="login-form" class="login-card" autocomplete="off">
+      <div class="login-card__head">
+        <span class="brand__mark" aria-hidden="true">HP</span>
+        <div>
+          <h1>Yönetim Paneli</h1>
+          <p>Haber toplama robotu</p>
+        </div>
+      </div>
+      <p class="login-card__info">
+        Bu alan yalnızca yetkili yöneticiler içindir. Giriş parolası sunucu tarafındaki
+        <code>ADMIN_PASSWORD</code> ortam değişkeninden doğrulanır.
+      </p>
+      <div class="field">
+        <label for="login-password">Yönetici parolası</label>
+        <input id="login-password" name="password" type="password" required autocomplete="current-password" placeholder="••••••••••••">
+      </div>
+      <button class="btn btn--primary btn--block" type="submit" id="login-submit">Giriş yap</button>
+      <p id="login-error" class="form-error" role="alert" hidden></p>
+      <p class="login-card__foot">
+        <a href="../index.html">← Haber portalına dön</a>
+      </p>
+    </form>
+  </section>
+
+  <!-- Panel -->
+  <div id="app-view" class="admin-shell" hidden>
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="../index.html" aria-label="Haber portalı ana sayfa">
+        <span class="brand__mark" aria-hidden="true">HP</span>
+        <span>
+          <strong>HABER PORTALI</strong>
+          <small>Yönetim</small>
+        </span>
+      </a>
+
+      <nav class="admin-nav" aria-label="Panel bölümleri">
+        <button type="button" class="admin-nav__item is-active" data-tab="dashboard">
+          <span aria-hidden="true">▤</span> Sistem Durumu
+        </button>
+        <button type="button" class="admin-nav__item" data-tab="news">
+          <span aria-hidden="true">☰</span> Haber Havuzu
+        </button>
+        <button type="button" class="admin-nav__item" data-tab="sources">
+          <span aria-hidden="true">↗</span> Kaynaklar
+        </button>
+        <button type="button" class="admin-nav__item" data-tab="logs">
+          <span aria-hidden="true">⚠</span> Hata Kayıtları
+        </button>
+      </nav>
+
+      <div class="admin-sidebar__foot">
+        <a class="admin-sidebar__link" href="../index.html" target="_blank" rel="noopener">Siteyi görüntüle ↗</a>
+        <button type="button" class="admin-sidebar__link admin-sidebar__link--button" id="logout-button">Çıkış yap</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div>
+          <p class="admin-topbar__eyebrow">Haber toplama robotu</p>
+          <h1 id="page-title">Sistem Durumu</h1>
+        </div>
+        <div class="admin-topbar__actions">
+          <span class="admin-env" id="env-badge">—</span>
+          <button type="button" class="btn btn--primary" id="btn-scan">Şimdi tara</button>
+        </div>
+      </header>
+
+      <div id="config-alert" class="alert alert--warning" hidden>
+        <strong>Yapılandırma gerekli</strong>
+        <p id="config-alert-text"></p>
+      </div>
+
+      <!-- Sistem durumu -->
+      <section id="tab-dashboard" class="admin-tab">
+        <div class="stat-grid">
+          <article class="stat-card">
+            <p class="stat-card__label">Robot durumu</p>
+            <p class="stat-card__value" id="stat-robot-status">—</p>
+            <p class="stat-card__hint" id="stat-robot-detail">—</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">Son çalışma</p>
+            <p class="stat-card__value stat-card__value--sm" id="stat-last-run">—</p>
+            <p class="stat-card__hint" id="stat-last-run-status">—</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">Sonraki planlanan tarama</p>
+            <p class="stat-card__value stat-card__value--sm" id="stat-next-run">—</p>
+            <p class="stat-card__hint" id="stat-interval">—</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">Aktif kaynak</p>
+            <p class="stat-card__value" id="stat-active-sources">—</p>
+            <p class="stat-card__hint" id="stat-total-sources">—</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">Bugün toplanan</p>
+            <p class="stat-card__value" id="stat-today">—</p>
+            <p class="stat-card__hint">Bugün havuza eklenen kayıt</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">Haber havuzu</p>
+            <p class="stat-card__value" id="stat-total">—</p>
+            <p class="stat-card__hint" id="stat-ready">—</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">Tekrar haber</p>
+            <p class="stat-card__value" id="stat-duplicates">—</p>
+            <p class="stat-card__hint">Aynı olayın diğer kaynak kayıtları</p>
+          </article>
+          <article class="stat-card">
+            <p class="stat-card__label">İnceleme bekleyen</p>
+            <p class="stat-card__value" id="stat-pending">—</p>
+            <p class="stat-card__hint">Kategori güveni düşük kayıtlar</p>
+          </article>
+        </div>
+
+        <div class="panel-grid">
+          <section class="panel">
+            <h2>Robot kontrolü</h2>
+            <p class="panel__desc">
+              Manuel tarama hemen çalışır. Duraklatma yalnızca zamanlanmış taramayı durdurur;
+              hiçbir haber bu aşamada portalda yayınlanmaz.
+            </p>
+            <div class="button-row">
+              <button type="button" class="btn btn--primary" id="btn-scan-secondary">Şimdi haberleri tara</button>
+              <button type="button" class="btn btn--outline" id="robot-toggle">Robotu duraklat</button>
+              <button type="button" class="btn btn--ghost" id="btn-clear-lock">Takılı kilidi temizle</button>
+            </div>
+            <form class="inline-form" id="interval-form">
+              <label for="interval-input">Tarama aralığı (dakika)</label>
+              <input id="interval-input" type="number" min="5" max="240" step="5" value="15">
+              <button type="submit" class="btn btn--outline">Kaydet</button>
+            </form>
+            <p class="panel__hint">Netlify zamanlanmış fonksiyonu 15 dakikada bir tetiklenir; aralık ayarı bu tetiklemelerin hangilerinin gerçek tarama yapacağını belirler.</p>
+          </section>
+
+          <section class="panel">
+            <h2>Son işlemler</h2>
+            <p class="panel__desc">Son toplama günlükleri. Ayrıntılar için “Hata Kayıtları” bölümünü açın.</p>
+            <div class="table-wrap">
+              <table class="admin-table admin-table--compact">
+                <thead>
+                  <tr><th>Zaman</th><th>Kaynak</th><th>Sonuç</th><th>Kayıt</th></tr>
+                </thead>
+                <tbody id="recent-logs-body">
+                  <tr><td colspan="4" class="table-empty">Kayıt yok.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="panel__hint" id="errors-24h">—</p>
+          </section>
+        </div>
+      </section>
+
+      <!-- Haber havuzu -->
+      <section id="tab-news" class="admin-tab" hidden>
+        <form class="filter-bar" id="news-filter-form">
+          <div class="field field--inline">
+            <label for="news-status">Durum</label>
+            <select id="news-status">
+              <option value="">Tümü</option>
+              <option value="ready_for_ai">Yapay zekâya hazır</option>
+              <option value="pending_review">İnceleme bekliyor</option>
+              <option value="categorized">Kategorilendi</option>
+              <option value="duplicate">Tekrar</option>
+              <option value="collected">Toplandı</option>
+              <option value="rejected">Reddedildi</option>
+            </select>
+          </div>
+          <div class="field field--inline">
+            <label for="news-category">Kategori</label>
+            <select id="news-category">
+              <option value="">Tümü</option>
+              <option value="world">Dünya</option>
+              <option value="turkey">Türkiye</option>
+              <option value="technology">Teknoloji</option>
+            </select>
+          </div>
+          <div class="field field--inline field--grow">
+            <label for="news-q">Başlıkta ara</label>
+            <input id="news-q" type="search" placeholder="Örneğin: yapay zekâ">
+          </div>
+          <button type="submit" class="btn btn--outline">Filtrele</button>
+          <button type="button" class="btn btn--ghost" id="news-refresh">Yenile</button>
+        </form>
+
+        <p class="table-meta" id="news-meta">Yükleniyor…</p>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Yayın</th>
+                <th>Başlık</th>
+                <th>Kategori</th>
+                <th>Kaynak</th>
+                <th>Puan</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody id="news-body">
+              <tr><td colspan="6" class="table-empty">Yükleniyor…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <button type="button" class="btn btn--ghost" id="news-prev">← Önceki</button>
+          <span id="news-page-info">Sayfa 1</span>
+          <button type="button" class="btn btn--ghost" id="news-next">Sonraki →</button>
+        </div>
+      </section>
+
+      <!-- Kaynaklar -->
+      <section id="tab-sources" class="admin-tab" hidden>
+        <div class="panel">
+          <div class="panel__head">
+            <div>
+              <h2>Haber kaynakları</h2>
+              <p class="panel__desc">Yeni kaynak pasif olarak eklenir. Önce “Doğrula” ile RSS adresini test edin, ardından etkinleştirin.</p>
+            </div>
+            <button type="button" class="btn btn--primary" id="btn-toggle-add">Yeni kaynak</button>
+          </div>
+
+          <form id="source-form" class="source-form" hidden>
+            <div class="form-grid">
+              <div class="field">
+                <label for="src-name">Kaynak adı</label>
+                <input id="src-name" required maxlength="120" placeholder="Örnek: BBC Türkçe">
+              </div>
+              <div class="field">
+                <label for="src-url">RSS adresi</label>
+                <input id="src-url" required type="url" placeholder="https://…/rss.xml">
+              </div>
+              <div class="field">
+                <label for="src-category">Kategori</label>
+                <select id="src-category" required>
+                  <option value="world">Dünya</option>
+                  <option value="turkey">Türkiye</option>
+                  <option value="technology">Teknoloji</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="src-language">Dil</label>
+                <input id="src-language" value="tr" maxlength="8">
+              </div>
+              <div class="field">
+                <label for="src-country">Ülke</label>
+                <input id="src-country" maxlength="10" placeholder="tr">
+              </div>
+              <div class="field">
+                <label for="src-reliability">Güvenilirlik (0-100)</label>
+                <input id="src-reliability" type="number" min="0" max="100" value="70">
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="btn btn--primary">Kaynağı ekle</button>
+              <button type="button" class="btn btn--ghost" id="btn-cancel-add">Vazgeç</button>
+            </div>
+            <p class="form-error" id="source-form-error" role="alert" hidden></p>
+          </form>
+
+          <p class="table-meta" id="sources-meta">Yükleniyor…</p>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Kaynak</th>
+                  <th>Kategori</th>
+                  <th>Dil</th>
+                  <th>Güvenilirlik</th>
+                  <th>Doğrulama</th>
+                  <th>Durum</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="sources-body">
+                <tr><td colspan="7" class="table-empty">Yükleniyor…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Günlükler -->
+      <section id="tab-logs" class="admin-tab" hidden>
+        <div class="filter-bar">
+          <div class="field field--inline">
+            <label for="log-status">Durum</label>
+            <select id="log-status">
+              <option value="">Tümü</option>
+              <option value="error">Hata</option>
+              <option value="partial">Kısmi</option>
+              <option value="success">Başarılı</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn--outline" id="logs-refresh">Yenile</button>
+          <a class="btn btn--ghost" href="#tab-logs" id="logs-only-errors">Yalnızca hatalar</a>
+        </div>
+        <p class="table-meta" id="logs-meta">Yükleniyor…</p>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Zaman</th>
+                <th>Kaynak</th>
+                <th>Durum</th>
+                <th>Bulunan</th>
+                <th>Kaydedilen</th>
+                <th>Tekrar</th>
+                <th>Süre</th>
+                <th>Hata</th>
+              </tr>
+            </thead>
+            <tbody id="logs-body">
+              <tr><td colspan="8" class="table-empty">Yükleniyor…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="admin-toast" role="status" hidden></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
