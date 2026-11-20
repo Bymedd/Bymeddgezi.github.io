@@ -14,6 +14,8 @@
     sources: [],
     activeTab: "dashboard",
     news: { offset: 0, limit: 25, total: 0, loaded: false },
+    newsItems: [],
+    reviewing: null,
     selectedLogStatus: ""
   };
 
@@ -23,7 +25,8 @@
     duplicate: "Tekrar",
     pending_review: "İnceleme bekliyor",
     ready_for_ai: "Yapay zekâya hazır",
-    rejected: "Reddedildi"
+    rejected: "Reddedildi",
+    published: "Yayında"
   };
 
   var STATUS_CLASSES = {
@@ -32,7 +35,8 @@
     duplicate: "badge--muted",
     pending_review: "badge--warn",
     ready_for_ai: "badge--ok",
-    rejected: "badge--bad"
+    rejected: "badge--bad",
+    published: "badge--ok"
   };
 
   var CATEGORY_LABELS = {
@@ -194,7 +198,10 @@
 
     $("#stat-today").textContent = String(articles.today);
     $("#stat-total").textContent = String(articles.total);
-    $("#stat-ready").textContent = articles.ready_for_ai + " yapay zekâya hazır · " + articles.categorized + " kategorilendi";
+    $("#stat-ready").textContent =
+      articles.ready_for_ai + " yapay zekâya hazır · " +
+      articles.categorized + " kategorilendi · " +
+      (articles.published || 0) + " yayında";
 
     $("#stat-duplicates").textContent = String(articles.duplicates);
     $("#stat-pending").textContent = String(articles.pending_review);
@@ -210,6 +217,11 @@
     var intervalInput = $("#interval-input");
     if (document.activeElement !== intervalInput) {
       intervalInput.value = String(robot.interval_minutes);
+    }
+
+    var autoToggle = $("#auto-publish-toggle");
+    if (autoToggle) {
+      autoToggle.checked = Boolean(robot.auto_publish);
     }
 
     var badge = $("#env-badge");
@@ -474,7 +486,7 @@
   async function loadNews(offset) {
     state.news.offset = Math.max(0, offset || 0);
     var body = $("#news-body");
-    body.innerHTML = '<tr><td colspan="6" class="table-empty">Yükleniyor…</td></tr>';
+    body.innerHTML = '<tr><td colspan="7" class="table-empty">Yükleniyor…</td></tr>';
 
     var params = new URLSearchParams();
     params.set("limit", String(state.news.limit));
@@ -494,7 +506,7 @@
       $("#news-meta").textContent = data.total + " kayıt · " + (state.news.offset + 1) + "–" +
         Math.min(state.news.offset + state.news.limit, data.total) + " arası gösteriliyor";
     } catch (error) {
-      body.innerHTML = '<tr><td colspan="6" class="table-empty">' + esc(error.message) + "</td></tr>";
+      body.innerHTML = '<tr><td colspan="7" class="table-empty">' + esc(error.message) + "</td></tr>";
       toast(error.message, true);
     }
   }
@@ -508,29 +520,151 @@
     $("#news-prev").disabled = state.news.offset === 0;
     $("#news-next").disabled = state.news.offset + state.news.limit >= total;
 
+    state.newsItems = items;
+
     if (!items.length) {
-      body.innerHTML = '<tr><td colspan="6" class="table-empty">Filtrelere uyan haber yok.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" class="table-empty">Filtrelere uyan haber yok.</td></tr>';
       return;
     }
 
     body.innerHTML = items
       .map(function (item) {
         var statusClass = STATUS_CLASSES[item.status] || "badge--muted";
+        var published = item.status === "published";
         return (
           "<tr>" +
           '<td class="cell-muted">' + esc(formatDate(item.published_at)) + "</td>" +
-          '<td><div class="cell-title"><a href="' + esc(safeUrl(item.article_url)) + '" target="_blank" rel="noopener">' +
-          esc(item.title) + "</a></div>" +
+          '<td><div class="cell-title"><button type="button" class="cell-link" data-review="' + esc(item.id) + '">' +
+          esc(item.title) + "</button></div>" +
           (item.review_reason ? '<span class="cell-sub">Not: ' + esc(item.review_reason) + "</span>" : "") +
+          (published ? '<span class="cell-sub">Portalda yayında</span>' : "") +
           "</td>" +
           "<td>" + esc(CATEGORY_LABELS[item.category] || "—") + "</td>" +
           "<td>" + esc(item.source_name || "—") + "</td>" +
           '<td class="cell-muted">' + esc(Math.round(Number(item.importance_score) || 0)) + "</td>" +
           '<td><span class="badge ' + statusClass + '">' + esc(STATUS_LABELS[item.status] || item.status) + "</span></td>" +
+          '<td><div class="row-actions">' +
+          '<button type="button" class="btn btn--outline" data-review="' + esc(item.id) + '">' +
+          (published ? "Düzenle" : "İncele") + "</button>" +
+          (published && item.portal_slug
+            ? '<a class="btn btn--ghost" href="/haber/pages/article.html?slug=' +
+              encodeURIComponent(item.portal_slug) + '" target="_blank" rel="noopener">Aç ↗</a>'
+            : "") +
+          "</div></td>" +
           "</tr>"
         );
       })
       .join("");
+  }
+
+  function reviewItem(id) {
+    return state.newsItems.filter(function (item) { return item.id === id; })[0] || null;
+  }
+
+  function setReviewPreview(url) {
+    var wrap = $("#review-preview-wrap");
+    var img = $("#review-preview");
+    if (/^https?:\/\//i.test(String(url || ""))) {
+      img.src = url;
+      wrap.hidden = false;
+    } else {
+      img.removeAttribute("src");
+      wrap.hidden = true;
+    }
+  }
+
+  function openReview(id) {
+    var item = reviewItem(id);
+    if (!item) {
+      toast("Haber bulunamadı, listeyi yenileyin.", true);
+      return;
+    }
+    state.reviewing = item;
+    var published = item.status === "published";
+
+    $("#review-title").textContent = published ? "Yayındaki haberi düzenle" : "Haberi incele ve onayla";
+    $("#review-meta").textContent =
+      (item.source_name || "Kaynak yok") +
+      " · " + (CATEGORY_LABELS[item.category] || "Kategori yok") +
+      " · Puan " + Math.round(Number(item.importance_score) || 0) +
+      " · Durum: " + (STATUS_LABELS[item.status] || item.status);
+
+    $("#review-heading").value = item.title || "";
+    $("#review-summary").value = item.description || "";
+    $("#review-category").value = item.category || "world";
+    $("#review-image").value = item.image_url || "";
+    $("#review-breaking").checked = Boolean(item.is_breaking);
+    setReviewPreview(item.image_url);
+
+    var source = $("#review-source");
+    source.href = safeUrl(item.article_url);
+    $("#review-source-note").textContent = item.article_url || "Kaynak adresi yok";
+
+    var publicLink = $("#review-public-link");
+    if (published && item.portal_slug) {
+      publicLink.href = "/haber/pages/article.html?slug=" + encodeURIComponent(item.portal_slug);
+      publicLink.hidden = false;
+    } else {
+      publicLink.hidden = true;
+    }
+
+    $("#review-approve").textContent = published ? "Değişiklikleri yayınla" : "Onayla ve yayınla";
+    $("#review-unpublish").hidden = !published;
+
+    var errorBox = $("#review-error");
+    errorBox.hidden = true;
+    $("#review-modal").hidden = false;
+    document.body.classList.add("is-locked");
+    window.setTimeout(function () { $("#review-heading").focus(); }, 30);
+  }
+
+  function closeReview() {
+    $("#review-modal").hidden = true;
+    document.body.classList.remove("is-locked");
+    state.reviewing = null;
+  }
+
+  async function submitReview(action, button) {
+    var item = state.reviewing;
+    if (!item) {
+      return;
+    }
+
+    if (action === "reject" && !window.confirm("Bu haber reddedilsin mi? Reddedilen haber havuza geri dönmez.")) {
+      return;
+    }
+    if (action === "unpublish" && !window.confirm("Haber portaldan kaldırılsın mı?")) {
+      return;
+    }
+
+    var body = { action: action, id: item.id };
+    if (action === "approve") {
+      body.title = $("#review-heading").value;
+      body.summary = $("#review-summary").value;
+      body.category = $("#review-category").value;
+      body.image_url = $("#review-image").value;
+      body.is_breaking = $("#review-breaking").checked;
+    }
+
+    var errorBox = $("#review-error");
+    errorBox.hidden = true;
+    var original = button.textContent;
+    button.disabled = true;
+    button.textContent = "İşleniyor…";
+    try {
+      var data = await api("/api/admin/news", { method: "POST", body: body });
+      toast(data.message || "İşlem tamamlandı.");
+      closeReview();
+      state.news.loaded = false;
+      await loadNews(state.news.offset);
+      await loadStatus({ silent: true });
+    } catch (error) {
+      errorBox.textContent = error.message;
+      errorBox.hidden = false;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
   }
 
   async function loadLogs() {
@@ -686,6 +820,47 @@
       var button = event.target.closest("[data-action]");
       if (button) {
         handleSourceAction(button);
+      }
+    });
+
+    $("#news-body").addEventListener("click", function (event) {
+      var trigger = event.target.closest("[data-review]");
+      if (trigger) {
+        openReview(trigger.getAttribute("data-review"));
+      }
+    });
+
+    document.querySelectorAll("[data-review-close]").forEach(function (element) {
+      element.addEventListener("click", closeReview);
+    });
+
+    $("#review-approve").addEventListener("click", function () { submitReview("approve", this); });
+    $("#review-reject").addEventListener("click", function () { submitReview("reject", this); });
+    $("#review-unpublish").addEventListener("click", function () { submitReview("unpublish", this); });
+    $("#review-image").addEventListener("input", function () { setReviewPreview(this.value.trim()); });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !$("#review-modal").hidden) {
+        closeReview();
+      }
+    });
+
+    $("#auto-publish-toggle").addEventListener("change", async function () {
+      var toggle = this;
+      var enabled = toggle.checked;
+      toggle.disabled = true;
+      try {
+        await api("/api/admin/robot", {
+          method: "POST",
+          body: { action: "set_auto_publish", auto_publish: enabled }
+        });
+        toast(enabled ? "Otomatik yayın açıldı." : "Otomatik yayın kapatıldı.");
+        await loadStatus({ silent: true });
+      } catch (error) {
+        toggle.checked = !enabled;
+        toast(error.message, true);
+      } finally {
+        toggle.disabled = false;
       }
     });
 

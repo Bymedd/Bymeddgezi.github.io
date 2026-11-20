@@ -2,10 +2,11 @@
    store.js — Veri erişim katmanı
    --------------------------------------------------------------------------
    Sayfalar haber verisine doğrudan erişmez; her zaman bu katman üzerinden
-   erişir. Bugün veri kaynağı "demo" sağlayıcısıdır (data.js).
-   İleride Supabase'e geçmek için yalnızca yeni bir sağlayıcı yazıp
-   NP.store.setProvider(...) ile tanıtmak yeterlidir. Sayfa kodlarının
-   değişmesi gerekmez.
+   erişir. İki sağlayıcı vardır:
+     - live : panelden onaylanmış haberler (/api/news)
+     - demo : data.js içindeki örnek içerik
+   Yayınlanmış gerçek haber yoksa veya API'ye ulaşılamazsa sayfa demo
+   içerikle açılır; böylece portal boş kalmaz.
 
    Sağlayıcı sözleşmesi (tümü Promise döner):
      list()                  -> tüm yayınlanmış haberler
@@ -53,6 +54,84 @@
     };
   }
 
+  function mapPublishedRow(row) {
+    var blocks = (row.content || []).map(function (block) {
+      return { type: block.type || "p", text: block.text || "" };
+    });
+    var summary = row.summary || "";
+    return {
+      id: row.id,
+      title: row.title,
+      slug: row.slug,
+      category: row.category,
+      summary: summary,
+      content: blocks,
+      image: row.image_url || NP.config.defaultImage,
+      imageAlt: row.title,
+      sourceName: row.source_name || "Haber Merkezi",
+      sourceUrl: row.source_url || "",
+      sources: row.source_url
+        ? [{ name: row.source_name || "Haber Merkezi", url: row.source_url, note: "" }]
+        : [],
+      publishedAt: row.published_at,
+      status: "published",
+      tags: row.tags || [],
+      isBreaking: Boolean(row.is_breaking),
+      views: row.views || 0,
+      author: row.source_name || "Haber Merkezi"
+    };
+  }
+
+  function fetchJson(url) {
+    return fetch(url, { headers: { accept: "application/json" } }).then(function (response) {
+      if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+      }
+      return response.json();
+    });
+  }
+
+  function liveProvider() {
+    return {
+      name: "live",
+      list: function () {
+        return fetchJson("/api/news?limit=60").then(function (data) {
+          return (data.items || []).map(mapPublishedRow);
+        });
+      },
+      bySlug: function (slug) {
+        return fetchJson("/api/news?slug=" + encodeURIComponent(slug)).then(function (data) {
+          return data.item ? mapPublishedRow(data.item) : null;
+        });
+      }
+    };
+  }
+
+  function demoList() {
+    provider = demoProvider();
+    return demoProvider()
+      .list()
+      .then(function (items) {
+        return utils.sortByDateDesc(items || []);
+      });
+  }
+
+  /* Önce yayınlanmış gerçek haberler; yoksa veya hata olursa demo içerik. */
+  function loadAll() {
+    return liveProvider()
+      .list()
+      .then(function (items) {
+        if (items.length) {
+          provider = liveProvider();
+          return utils.sortByDateDesc(items);
+        }
+        return demoList();
+      })
+      .catch(function () {
+        return demoList();
+      });
+  }
+
   function ensureProvider() {
     if (!provider) {
       provider = demoProvider();
@@ -60,16 +139,20 @@
     return provider;
   }
 
+  var pending = null;
+
   function all() {
     if (cache) {
       return Promise.resolve(cache);
     }
-    return ensureProvider()
-      .list()
-      .then(function (items) {
-        cache = utils.sortByDateDesc(items || []);
+    if (!pending) {
+      pending = loadAll().then(function (items) {
+        cache = items;
+        pending = null;
         return cache;
       });
+    }
+    return pending;
   }
 
   var store = {
@@ -77,11 +160,11 @@
     setProvider: function (nextProvider) {
       provider = nextProvider;
       cache = null;
+      pending = null;
     },
 
     /* Veri kaynağını hazırlar; gelecekte ağ bağlantısı burada kurulacak. */
     init: function () {
-      ensureProvider();
       return all();
     },
 
@@ -101,8 +184,10 @@
       if (!slug) {
         return Promise.resolve(null);
       }
-      return ensureProvider()
-        .bySlug(slug)
+      return all()
+        .then(function () {
+          return ensureProvider().bySlug(slug);
+        })
         .then(function (article) {
           if (!article || article.status !== "published") {
             return null;

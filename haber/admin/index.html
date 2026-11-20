@@ -157,6 +157,16 @@
               <button type="submit" class="btn btn--outline">Kaydet</button>
             </form>
             <p class="panel__hint">Netlify zamanlanmış fonksiyonu 15 dakikada bir tetiklenir; aralık ayarı bu tetiklemelerin hangilerinin gerçek tarama yapacağını belirler.</p>
+
+            <div class="auto-publish">
+              <label class="auto-publish__row" for="auto-publish-toggle">
+                <input type="checkbox" id="auto-publish-toggle">
+                <span>
+                  <strong>Otomatik yayın</strong>
+                  <small>Kapalıyken hiçbir haber onaylanmadan yayınlanmaz. Açıkken puan eşiğini geçen haberler doğrudan portala düşer.</small>
+                </span>
+              </label>
+            </div>
           </section>
 
           <section class="panel">
@@ -186,6 +196,7 @@
               <option value="">Tümü</option>
               <option value="ready_for_ai">Yapay zekâya hazır</option>
               <option value="pending_review">İnceleme bekliyor</option>
+              <option value="published">Yayında</option>
               <option value="categorized">Kategorilendi</option>
               <option value="duplicate">Tekrar</option>
               <option value="collected">Toplandı</option>
@@ -220,10 +231,11 @@
                 <th>Kaynak</th>
                 <th>Puan</th>
                 <th>Durum</th>
+                <th>İşlem</th>
               </tr>
             </thead>
             <tbody id="news-body">
-              <tr><td colspan="6" class="table-empty">Yükleniyor…</td></tr>
+              <tr><td colspan="7" class="table-empty">Yükleniyor…</td></tr>
             </tbody>
           </table>
         </div>
@@ -342,6 +354,75 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Haber inceleme / onay -->
+  <div id="review-modal" class="review-modal" role="dialog" aria-modal="true" aria-labelledby="review-title" hidden>
+    <div class="review-modal__backdrop" data-review-close></div>
+    <div class="review-dialog" role="document">
+      <header class="review-dialog__head">
+        <div>
+          <p class="admin-topbar__eyebrow">Haberi incele ve yayınla</p>
+          <h2 id="review-title">Haber</h2>
+        </div>
+        <button type="button" class="review-dialog__close" data-review-close aria-label="Kapat">×</button>
+      </header>
+
+      <div class="review-dialog__body">
+        <div id="review-meta" class="review-meta">—</div>
+
+        <div class="field">
+          <label for="review-heading">Başlık</label>
+          <input id="review-heading" maxlength="300" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label for="review-summary">Özet</label>
+          <textarea id="review-summary" rows="4" maxlength="900"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="review-category">Kategori</label>
+            <select id="review-category">
+              <option value="world">Dünya</option>
+              <option value="turkey">Türkiye</option>
+              <option value="technology">Teknoloji</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="review-image">Görsel adresi (kaynaktan linklenir)</label>
+            <input id="review-image" type="url" maxlength="2000" placeholder="https://…">
+          </div>
+        </div>
+
+        <label class="review-check">
+          <input type="checkbox" id="review-breaking">
+          <span>Son dakika olarak işaretle</span>
+        </label>
+
+        <figure class="review-preview" id="review-preview-wrap" hidden>
+          <img id="review-preview" alt="Haber görseli önizlemesi" referrerpolicy="no-referrer">
+          <figcaption>Görsel kaynağın sunucusundan yüklenir; dosya kopyalanmaz.</figcaption>
+        </figure>
+
+        <div class="review-source">
+          <a id="review-source" href="#" target="_blank" rel="noopener noreferrer">Kaynağı yeni sekmede aç ↗</a>
+          <span id="review-source-note" class="cell-sub"></span>
+        </div>
+
+        <p id="review-error" class="form-error" role="alert" hidden></p>
+      </div>
+
+      <footer class="review-dialog__foot">
+        <a id="review-public-link" class="btn btn--ghost" href="#" target="_blank" rel="noopener" hidden>Portaldaki hâlini aç ↗</a>
+        <div class="review-dialog__actions">
+          <button type="button" class="btn btn--ghost" id="review-reject">Reddet</button>
+          <button type="button" class="btn btn--outline" id="review-unpublish" hidden>Yayından kaldır</button>
+          <button type="button" class="btn btn--primary" id="review-approve">Onayla ve yayınla</button>
+        </div>
+      </footer>
+    </div>
   </div>
 
   <div id="toast" class="admin-toast" role="status" hidden></div>
