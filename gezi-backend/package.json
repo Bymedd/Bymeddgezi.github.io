@@ -1,9 +1,0 @@
-{
-  "name": "gezilecek-site",
-  "private": true,
-  "description": "gezilecek.net statik site + haber paneli fonksiyonları",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.45.4",
-    "rss-parser": "^3.13.0"
-  }
-}
