@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /haber/admin/
-Disallow: /haber/api/
-Disallow: /haber/pages/search.html
-
-Sitemap: https://gezilecek.net/haber/sitemap.xml
