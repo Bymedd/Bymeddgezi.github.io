@@ -1,4 +1,4 @@
-# YUKLE — GitHub'a yüklenecek tek klasör
+# dist — GitHub'a yüklenecek tek klasör
 
 Bu klasörün içeriği, depo kökünün birebir aynasıdır:
 
@@ -19,5 +19,6 @@ Var olan dosyaların üzerine yazar; silmen gereken bir şey yok.
 
 ## Neye dokunmaz
 
-Kökteki gezi sayfaları (`turkey.html`, `Ankara.html`, `assets/`, `dist/` ...)
-bu klasörde yoktur, yani bu yüklemeyle bozulmaz.
+Aynı klasördeki gezi sayfaları (`index.html`, `Ankara.html`, `assets/`, `images/` ...)
+yükleme listesinde değildir; bu 4 öğe sadece `netlify/`, `netlify.toml`,
+`package.json` ve `haber/` yüklenir.
