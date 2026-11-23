@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /haber/admin/
 
 Sitemap: https://gezilecek.net/sitemap.xml
