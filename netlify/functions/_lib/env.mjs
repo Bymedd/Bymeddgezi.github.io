@@ -44,12 +44,44 @@ export function envValue(name) {
   return clean(process.env[name]);
 }
 
+/* Netlify panelinde değişken adı birebir değil de en yakın karşılığıyla
+   girilmiş olabilir. Aynı değeri taşıyan kabul edilen adlar: */
+const NAMES = {
+  supabaseUrl: ["SUPABASE_URL", "SUPABASE_PROJECT_URL"],
+  supabaseServiceKey: ["SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SERVICE_KEY", "SERVICE_ROLE_KEY"],
+  adminPassword: ["ADMIN_PASSWORD", "HABER_ADMIN_PASSWORD"],
+  sessionSecret: ["ADMIN_SESSION_SECRET", "ADMIN_SECRET", "SESSION_SECRET"]
+};
+
+function firstValue(names) {
+  for (const name of names) {
+    const value = clean(process.env[name]);
+    if (value) {
+      return value;
+    }
+  }
+  return "";
+}
+
+/** Hata mesajında tahmin yürütmemek için: hangi kabul edilen adlar dolu? (yalnız adlar) */
+export function envProbe() {
+  const found = [];
+  for (const names of Object.values(NAMES)) {
+    for (const name of names) {
+      if (clean(process.env[name])) {
+        found.push(name);
+      }
+    }
+  }
+  return found;
+}
+
 export function getRuntimeConfig() {
   return {
-    supabaseUrl: envValue("SUPABASE_URL"),
-    supabaseServiceKey: envValue("SUPABASE_SERVICE_ROLE_KEY"),
-    adminPassword: envValue("ADMIN_PASSWORD"),
-    sessionSecret: envValue("ADMIN_SESSION_SECRET"),
+    supabaseUrl: firstValue(NAMES.supabaseUrl),
+    supabaseServiceKey: firstValue(NAMES.supabaseServiceKey),
+    adminPassword: firstValue(NAMES.adminPassword),
+    sessionSecret: firstValue(NAMES.sessionSecret),
     userAgent: envValue("COLLECTOR_USER_AGENT") || DEFAULTS.userAgent,
     intervalMinutes: toInt(
       process.env.COLLECT_INTERVAL_MINUTES,

@@ -3,6 +3,7 @@
    ========================================================================== */
 
 import { ConfigurationError } from "./supabase.mjs";
+import { envProbe } from "./env.mjs";
 
 export class HttpError extends Error {
   constructor(status, code, message, details) {
@@ -106,7 +107,11 @@ export function handleError(error, context) {
       503,
       "configuration_required",
       error.message,
-      { missing: error.missing, hint: "README → 12. bölümdeki kurulum adımlarını izleyin." }
+      {
+        missing: error.missing,
+        found: envProbe(),
+        hint: "README → 12. bölümdeki kurulum adımlarını izleyin."
+      }
     );
   }
   console.error(`[${context}] beklenmeyen hata:`, error);
